@@ -393,12 +393,170 @@
     .stock-grid{grid-template-columns:1fr;}
     .hero-inner{padding:130px 20px 60px;}
   }
+
+/* --- 1. HUD Canlandırma: Yanıp Sönen Kırmızı REC Işığı --- */
+@keyframes pulse {
+  0% { opacity: 1; transform: scale(1); box-shadow: 0 0 6px #ff3b3b; }
+  50% { opacity: 0.3; transform: scale(0.9); box-shadow: 0 0 1px #ff3b3b; }
+  100% { opacity: 1; transform: scale(1); box-shadow: 0 0 6px #ff3b3b; }
+}
+.cam-hud .rec {
+  /* Mevcut sınıfa bu animasyon entegre edildi */
+  animation: pulse 1.5s infinite ease-in-out; 
+}
+
+/* --- 2. RGB / LED Ortam Aydınlatma Sınıfları --- */
+@keyframes rgb-glow {
+  0% { border-color: rgba(244, 180, 0, 0.4); box-shadow: 0 0 15px rgba(244, 180, 0, 0.2); }
+  33% { border-color: rgba(213, 38, 45, 0.4); box-shadow: 0 0 15px rgba(213, 38, 45, 0.2); }
+  66% { border-color: rgba(0, 191, 255, 0.4); box-shadow: 0 0 15px rgba(0, 191, 255, 0.2); }
+  100% { border-color: rgba(244, 180, 0, 0.4); box-shadow: 0 0 15px rgba(244, 180, 0, 0.2); }
+}
+
+/* RGB Modu Aktif Edildiğinde Araç Kartlarına Uygulanacak Stil */
+body.rgb-active .car-card {
+  animation: rgb-glow 6s infinite linear;
+  transition: all 0.5s ease;
+}
+
+/* RGB Butonunun Tasarımı */
+.rgb-toggle-btn {
+  background: rgba(18, 31, 48, 0.85);
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(5px);
+}
+.rgb-toggle-btn:hover {
+  background: var(--gold);
+  color: var(--bg);
+  box-shadow: 0 0 10px var(--gold);
+}
+.rgb-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #555;
+  display: inline-block;
+}
+body.rgb-active .rgb-indicator {
+  background: #00ffcc;
+  box-shadow: 0 0 8px #00ffcc;
+  animation: pulse 1s infinite;
+}
+
+/* --- 3. Canlı Streamer Paneli (Sidebar) Tasarımı --- */
+.streamer-panel {
+  position: fixed;
+  right: 20px;
+  bottom: 80px;
+  width: 260px;
+  background: rgba(18, 31, 48, 0.95);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  z-index: 150;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  overflow: hidden;
+  font-family: var(--font-body);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+.streamer-header {
+  background: var(--bg-alt);
+  padding: 10px 15px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.streamer-header h4 {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  color: var(--text);
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.streamer-live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ff3b3b;
+  animation: pulse 1s infinite;
+}
+.streamer-list {
+  padding: 10px 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+.streamer-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.8rem;
+}
+.streamer-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.streamer-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--gold);
+}
+.streamer-name {
+  font-weight: 600;
+  color: var(--text);
+}
+.streamer-status {
+  background: rgba(213, 38, 45, 0.2);
+  color: var(--crimson);
+  border: 1px solid var(--crimson);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  padding: 1px 6px;
+  border-radius: 3px;
+  text-transform: uppercase;
+}
+.streamer-status.live {
+  background: rgba(0, 255, 150, 0.15);
+  color: #00ff96;
+  border-color: #00ff96;
+}
+
+  
 </style>
 </head>
 <body>
 <div class="grain" aria-hidden="true"></div>
 
 <header class="nav">
+
+<button class="rgb-toggle-btn" id="rgbToggle">
+  <span class="rgb-indicator"></span>
+  RGB MODU
+</button>
+  
   <div class="nav-inner">
     <a class="brand" href="#top">
       <span class="mark"></span>
@@ -656,6 +814,45 @@
     entries.forEach(e => { if (e.isIntersecting){ e.target.classList.add('in-view'); io.unobserve(e.target); } });
   }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
   document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+
+<div class="streamer-panel" id="streamerPanel">
+  <div class="streamer-header">
+    <h4><span class="streamer-live-dot"></span> YAYINCILARIMIZ (KNGRP)</h4>
+  </div>
+  <div class="streamer-list">
+    <div class="streamer-item">
+      <div class="streamer-info">
+        <div class="streamer-avatar">AT</div>
+        <span class="streamer-name">Ahmetturku</span>
+      </div>
+      <span class="streamer-status live">YAYINDA</span>
+    </div>
+    <div class="streamer-item">
+      <div class="streamer-info">
+        <div class="streamer-avatar">ÇO</div>
+        <span class="streamer-name">CicekOto_RP</span>
+      </div>
+      <span class="streamer-status live">YAYINDA</span>
+    </div>
+    <div class="streamer-item" style="opacity: 0.6;">
+      <div class="streamer-info">
+        <div class="streamer-avatar">GA</div>
+        <span class="streamer-name">Galeri_Alıcı</span>
+      </div>
+      <span class="streamer-status">ÇEVRİMDIŞI</span>
+    </div>
+  </div>
+</div>
+  // RGB Modu Geçiş Tetikleyicisi
+const rgbButton = document.getElementById('rgbToggle');
+if (rgbButton) {
+  rgbButton.addEventListener('click', () => {
+    document.body.classList.toggle('rgb-active');
+  });
+}
+
+  
 </script>
 </body>
 </html>
